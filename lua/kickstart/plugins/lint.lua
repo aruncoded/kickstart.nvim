@@ -6,7 +6,9 @@ local lint = require 'lint'
 lint.linters_by_ft = {
   markdown = { 'markdownlint' }, -- Make sure to install `markdownlint` via mason / npm
 
-  python = { 'ruff' },
+  -- Python linting is handled by 'ruff' LSP server
+  -- not nvim-lint. The LSP gives live diagnostics instead of on-save only, and
+  -- running both produces duplicate messages.
 
   javascript = { 'biome' },
   javascriptreact = { 'biome' },

@@ -127,10 +127,10 @@ do
   -- Enable break indent
   vim.o.breakindent = true
 
-  -- Set tab spacing to 3 spaces
-  vim.o.tabstop = 3 -- Width of a tab character
-  vim.o.shiftwidth = 3 -- Size of an indent
-  vim.o.softtabstop = 3 -- Number of spaces that a <Tab> counts for while editing
+  -- Set tab spacing to 2 spaces
+  vim.o.tabstop = 2 -- Width of a tab character
+  vim.o.shiftwidth = 2 -- Size of an indent
+  vim.o.softtabstop = 2 -- Number of spaces that a <Tab> counts for while editing
   vim.o.expandtab = true -- Use spaces instead of tabs
 
   -- Enable undo/redo changes even after closing and reopening a file
@@ -716,8 +716,16 @@ do
     -- But for many setups, the LSP (`ts_ls`) will work just fine
     -- ts_ls = {},
 
-    stylua = {}, -- Used to format Lua code
-    ty = {}, -- Used to format Python code
+    -- Astral's Python type checker
+    ty = {},
+
+    -- Astral's Python linter
+    ruff = {
+      on_attach = function(client, _)
+        -- Let 'ty' own hover
+        client.server_capabilities.hoverProvider = false
+      end,
+    },
 
     -- Special Lua Config, as recommended by neovim help docs
     lua_ls = {
@@ -774,6 +782,9 @@ do
   local ensure_installed = vim.tbl_keys(servers or {})
   vim.list_extend(ensure_installed, {
     -- You can add other tools here that you want Mason to install
+    'stylua',
+    'biome',
+    'markdownlint',
   })
 
   require('mason-tool-installer').setup { ensure_installed = ensure_installed }
@@ -792,18 +803,13 @@ do
   -- [[ Formatting ]]
   vim.pack.add { gh 'stevearc/conform.nvim' }
   require('conform').setup {
-    notify_on_error = false,
+    notify_on_error = true,
     format_on_save = function(bufnr)
-      -- You can specify filetypes to autoformat on save here:
-      local enabled_filetypes = {
-        -- lua = true,
-        -- python = true,
-      }
-      if enabled_filetypes[vim.bo[bufnr].filetype] then
-        return { timeout_ms = 500 }
-      else
-        return nil
-      end
+      -- Opt-out rather than Opt-in: format everything except languages with
+      -- no well-standarized style, where a formatter does more harm than good.
+      local disable_filetypes = { c = true, cpp = true }
+      if disable_filetypes[vim.bo[bufnr].filetype] then return nil end
+      return { timeout_ms = 2000, lsp_format = 'fallback' }
     end,
     default_format_opts = {
       lsp_format = 'fallback', -- Use external formatters if configured below, otherwise use LSP formatting. Set to `false` to disable LSP formatting entirely.
@@ -816,7 +822,9 @@ do
       --
       -- You can use 'stop_after_first' to run the first available formatter from the list
       -- javascript = { "prettierd", "prettier", stop_after_first = true },
-      python = { 'ruff_format' },
+
+      lua = { 'stylua' },
+      python = { 'ruff_fix', 'ruff_format', 'ruff_organize_imports' },
 
       javascript = { 'biome' },
       javascriptreact = { 'biome' },
@@ -994,7 +1002,7 @@ do
   require 'kickstart.plugins.lint'
   -- require 'kickstart.plugins.autopairs'
   require 'kickstart.plugins.neo-tree'
-  -- require 'kickstart.plugins.gitsigns' -- adds gitsigns recommended keymaps
+  require 'kickstart.plugins.gitsigns' -- adds gitsigns recommended keymaps
 
   -- NOTE: You can add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
   --
