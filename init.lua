@@ -127,6 +127,12 @@ do
   -- Enable break indent
   vim.o.breakindent = true
 
+  -- Set tab spacing to 3 spaces
+  vim.o.tabstop = 3 -- Width of a tab character
+  vim.o.shiftwidth = 3 -- Size of an indent
+  vim.o.softtabstop = 3 -- Number of spaces that a <Tab> counts for while editing
+  vim.o.expandtab = true -- Use spaces instead of tabs
+
   -- Enable undo/redo changes even after closing and reopening a file
   vim.o.undofile = true
 
@@ -227,6 +233,10 @@ do
   vim.keymap.set('n', '<right>', '<cmd>echo "Use l to move!!"<CR>')
   vim.keymap.set('n', '<up>', '<cmd>echo "Use k to move!!"<CR>')
   vim.keymap.set('n', '<down>', '<cmd>echo "Use j to move!!"<CR>')
+
+  -- Keybinds for Splitting windows
+  vim.keymap.set('n', '<leader>-', '<cmd>split<CR>', { desc = 'Split window horizontally' })
+  vim.keymap.set('n', '<leader>\\', '<cmd>vsplit<CR>', { desc = 'Split window vertically' })
 
   -- Keybinds to make split navigation easier.
   --  Use CTRL+<hjkl> to switch between windows
@@ -707,6 +717,7 @@ do
     -- ts_ls = {},
 
     stylua = {}, -- Used to format Lua code
+    ty = {}, -- Used to format Python code
 
     -- Special Lua Config, as recommended by neovim help docs
     lua_ls = {
@@ -805,6 +816,15 @@ do
       --
       -- You can use 'stop_after_first' to run the first available formatter from the list
       -- javascript = { "prettierd", "prettier", stop_after_first = true },
+      python = { 'ruff_format' },
+
+      javascript = { 'biome' },
+      javascriptreact = { 'biome' },
+      typescript = { 'biome' },
+      typescriptreact = { 'biome' },
+
+      json = { 'biome' },
+      jsonc = { 'biome' },
     },
   }
 
@@ -971,7 +991,7 @@ do
   --
   -- require 'kickstart.plugins.debug'
   -- require 'kickstart.plugins.indent_line'
-  -- require 'kickstart.plugins.lint'
+  require 'kickstart.plugins.lint'
   -- require 'kickstart.plugins.autopairs'
   require 'kickstart.plugins.neo-tree'
   -- require 'kickstart.plugins.gitsigns' -- adds gitsigns recommended keymaps
