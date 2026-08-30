@@ -167,6 +167,9 @@ do
   -- Replace the ~ for the empty lines to ' '
   vim.opt.fillchars = { eob = ' ' }
 
+  -- Remove the Neovim intro message
+  vim.opt.shortmess:append 'I'
+
   -- Preview substitutions live, as you type!
   vim.o.inccommand = 'split'
 
@@ -203,7 +206,14 @@ do
     underline = { severity = { min = vim.diagnostic.severity.WARN } },
 
     -- Can switch between these as you prefer
-    virtual_text = true, -- Text shows up at the end of the line
+    virtual_text = {
+      spacing = 2,
+      -- Name the server when several are attached: on Python buffers both
+      -- 'ruff' and 'ty' report diagnostics, and it's useful to know which.
+      format = function(diagnostic)
+        if diagnostic.code then return ('[%s] %s'):format(diagnostic.code, diagnostic.message) end
+      end,
+    }, -- Text shows up at the end of the line
     virtual_lines = false, -- Text shows up underneath the line, with virtual lines
 
     -- Auto open the float, so you can easily read the errors when jumping with `[d` and `]d`
@@ -444,6 +454,42 @@ do
   -- - sd'   - [S]urround [D]elete [']quotes
   -- - sr)'  - [S]urround [R]eplace [)] [']
   require('mini.surround').setup()
+
+  local starter = require 'mini.starter'
+  starter.setup {
+    -- Run an item's action as soon as the typed query matches only one item
+    evaluate_single = true,
+    items = {
+      -- (count, current_dir_only, show_path)
+      starter.sections.recent_files(5, false, false),
+      starter.sections.builtin_actions(),
+    },
+    -- NOTE: gen_hook entries are *generators* -- They must be called.
+    content_hooks = {
+      starter.gen_hook.adding_bullet(),
+      starter.gen_hook.indexing('all', { 'Builtin actions' }),
+      starter.gen_hook.aligning('center', 'center'),
+    },
+    header = function()
+      local hour = tonumber(vim.fn.strftime '%H')
+      local part = 'Evening'
+      if hour >= 4 and hour < 12 then
+        part = 'Morning'
+      elseif hour >= 12 and hour < 20 then
+        part = 'Afternoon'
+      end
+      local phrases = {
+        'What are we tackling next?',
+        'What are we building today?',
+        'Where do you want to start?',
+        "Let's get into it.",
+      }
+      -- os.time() changes every second, so this varies without seeding
+      -- math.random (LuaJIT repeats the same sequence otherwise)
+      local phrase = phrases[os.time() % #phrases + 1]
+      return (' Good %s, Arun!\n%s'):format(part, phrase)
+    end,
+  }
 
   -- Simple and easy statusline.
   --  You could remove this setup call if you don't like it,
@@ -726,6 +772,9 @@ do
         client.server_capabilities.hoverProvider = false
       end,
     },
+
+    -- Spell/Typo check.
+    typos_lsp = {},
 
     -- Special Lua Config, as recommended by neovim help docs
     lua_ls = {
