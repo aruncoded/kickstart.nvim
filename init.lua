@@ -86,7 +86,7 @@ P.S. You can delete this when you're done too. It's your config now! :)
 
 -- ============================================================
 -- SECTION 1: OPTIONS
--- Core Neovim settings, leaders, options
+-- Core Neovim settings, leaders, options, basic keymaps, basic autocmds
 -- ============================================================
 do
   -- Enable faster startup by caching compiled Lua modules
@@ -187,7 +187,7 @@ end
 
 -- ============================================================
 -- SECTION 2: KEYMAPS & AUTOCMDS
--- basic keymaps, basic autocmds
+-- basic keymaps
 -- ============================================================
 do
   -- [[ Basic Keymaps ]]
@@ -208,10 +208,14 @@ do
     -- Can switch between these as you prefer
     virtual_text = {
       spacing = 2,
-      -- Name the server when several are attached: on Python buffers both
-      -- 'ruff' and 'ty' report diagnostics, and it's useful to know which.
+      -- Tag the message with its code, falling back to the server name: on
+      -- Python buffers both 'ruff' and 'ty' report diagnostics, and it's useful
+      -- to know which.
+      -- NOTE: returning nul here hides the diagnostic from virtual text
       format = function(diagnostic)
-        if diagnostic.code then return ('[%s] %s'):format(diagnostic.code, diagnostic.message) end
+        local tag = diagnostic.code or diagnostic.source
+        if not tag then return diagnostic.message end
+        return ('[%s] %s'):format(tag, diagnostic.message)
       end,
     }, -- Text shows up at the end of the line
     virtual_lines = false, -- Text shows up underneath the line, with virtual lines
@@ -494,15 +498,15 @@ do
   -- Simple and easy statusline.
   --  You could remove this setup call if you don't like it,
   --  and try some other statusline plugin
-  -- local statusline = require 'mini.statusline'
+  local statusline = require 'mini.statusline'
   -- Set `use_icons` to true if you have a Nerd Font
-  -- statusline.setup { use_icons = vim.g.have_nerd_font }
+  statusline.setup { use_icons = vim.g.have_nerd_font }
 
   -- You can configure sections in the statusline by overriding their
   -- default behavior. For example, here we set the section for
   -- cursor location to LINE:COLUMN
-  -- -@diagnostic disable-next-line: duplicate-set-field
-  -- statusline.section_location = function() return '%2l:%-2v' end
+  ---@diagnostic disable-next-line: duplicate-set-field
+  statusline.section_location = function() return '%2l:%-2v %2p%%' end
 
   -- ... and there is more!
   --  Check out: https://github.com/nvim-mini/mini.nvim
@@ -775,6 +779,7 @@ do
 
     -- Spell/Typo check.
     typos_lsp = {},
+    tailwindcss = {},
 
     -- Special Lua Config, as recommended by neovim help docs
     lua_ls = {
@@ -820,9 +825,9 @@ do
   require('mason').setup {}
 
   -- Translates between nvim-lspconfig server names and mason.nvim package names (e.g. lua_ls <-> lua-language-server)
-  require('mason-lspconfig').setup {
-    automatic_enable = false, -- Change this to true if you want to automatically enable servers that are installed manually (e.g. via :Mason / :MasonInstall)
-  }
+  -- require('mason-lspconfig').setup {
+  -- automatic_enable = false, -- Change this to true if you want to automatically enable servers that are installed manually (e.g. via :Mason / :MasonInstall)
+  -- }
 
   -- Ensure the servers and tools above are installed
   --
@@ -936,6 +941,11 @@ do
       --
       -- See `:help blink-cmp-config-keymap` for defining your own keymap
       preset = 'default',
+
+      -- <c-space> is claimed by the tmux prefix key at the terminal level,
+      -- so it never reaches nvim. Move the menu/docs trigger to <c-l>
+      ['<c-space>'] = {},
+      ['<c-l>'] = { 'show', 'show_documentation', 'hide_documentation' },
 
       -- For more advanced Luasnip keymaps (e.g. selecting choice nodes, expansion) see:
       --    https://github.com/L3MON4D3/LuaSnip?tab=readme-ov-file#keymaps

@@ -7,7 +7,14 @@ vim.pack.add {
   'https://github.com/MunifTanjim/nui.nvim',
 }
 
-vim.keymap.set('n', '\\', '<Cmd>Neotree reveal<CR>', { desc = 'NeoTree reveal', silent = true })
+vim.keymap.set('n', '\\', function()
+  local path = vim.api.nvim_buf_get_name(0)
+  if vim.bo.buftype == '' and path ~= '' and vim.uv.fs_stat(path) then
+    vim.cmd 'Neotree reveal'
+  else
+    vim.cmd 'Neotree focus'
+  end
+end, { desc = 'NeoTree reveal', silent = true })
 
 require('neo-tree').setup {
   filesystem = {

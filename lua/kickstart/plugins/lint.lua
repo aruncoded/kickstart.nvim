@@ -10,13 +10,13 @@ lint.linters_by_ft = {
   -- not nvim-lint. The LSP gives live diagnostics instead of on-save only, and
   -- running both produces duplicate messages.
 
-  javascript = { 'biome' },
-  javascriptreact = { 'biome' },
-  typescript = { 'biome' },
-  typescriptreact = { 'biome' },
+  javascript = { 'biomejs' },
+  javascriptreact = { 'biomejs' },
+  typescript = { 'biomejs' },
+  typescriptreact = { 'biomejs' },
 
-  json = { 'biome' },
-  jsonc = { 'biome' }
+  json = { 'biomejs' },
+  jsonc = { 'biomejs' },
 }
 
 -- To allow other plugins to add linters to require('lint').linters_by_ft,
