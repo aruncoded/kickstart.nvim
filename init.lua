@@ -186,7 +186,7 @@ do
 end
 
 -- ============================================================
--- SECTION 2: KEYMAPS & AUTOCMDS
+-- SECTION 2: KEYMAPS
 -- basic keymaps
 -- ============================================================
 do
@@ -211,7 +211,7 @@ do
       -- Tag the message with its code, falling back to the server name: on
       -- Python buffers both 'ruff' and 'ty' report diagnostics, and it's useful
       -- to know which.
-      -- NOTE: returning nul here hides the diagnostic from virtual text
+      -- NOTE: returning nil here hides the diagnostic from virtual text
       format = function(diagnostic)
         local tag = diagnostic.code or diagnostic.source
         if not tag then return diagnostic.message end
@@ -503,8 +503,7 @@ do
   statusline.setup { use_icons = vim.g.have_nerd_font }
 
   -- You can configure sections in the statusline by overriding their
-  -- default behavior. For example, here we set the section for
-  -- cursor location to LINE:COLUMN
+  -- default behavior.
   ---@diagnostic disable-next-line: duplicate-set-field
   statusline.section_location = function() return '%2l:%-2v %2p%%' end
 
@@ -801,7 +800,10 @@ do
             checkThirdParty = false,
             -- NOTE: this is a lot slower and will cause issues when working on your own configuration.
             --  See https://github.com/neovim/nvim-lspconfig/issues/3189
-            library = vim.api.nvim_get_runtime_file('', true),
+            library = vim.tbl_extend('force', vim.api.nvim_get_runtime_file('', true), {
+              '${3rd}/luv/library',
+              '${3rd}/busted/library',
+            }),
           },
         })
       end,
@@ -943,7 +945,7 @@ do
       preset = 'default',
 
       -- <c-space> is claimed by the tmux prefix key at the terminal level,
-      -- so it never reaches nvim. Move the menu/docs trigger to <c-l>
+      -- so it never reaches nvim. Move the menu/docs trigger to <c-l>.
       ['<c-space>'] = {},
       ['<c-l>'] = { 'show', 'show_documentation', 'hide_documentation' },
 
